@@ -5,6 +5,7 @@ const sendResponse = require('@response');
 const logger = require('@logger');
 const commonUtils = require('@utils/common');
 const accommodationUtils = require('../accommodation.utils');
+
 const {
     INVALID_REQUEST,
     CREATE_SUCCESSFUL,
@@ -13,6 +14,7 @@ const {
     LIST_SUCCESSFUL,
     LOAD_SUCCESSFUL,
     ACCOMMODATION_NOT_FOUND,
+    UPLOAD_SUCCESSFUL
 } = require('../accommodation.constants');
 
 module.exports.create = async (req, res, next) => {
@@ -294,5 +296,26 @@ module.exports.listAndCount = async (req, res, next) => {
         return sendResponse(req, res, next);
     } catch(error) {
         next(error);
+    }
+}
+
+module.exports.uploadImage = async (req, res, next) => {
+    try {
+        const myFiles = req.files;
+        
+        const uploads = myFiles.map(async file => {
+            const AttachmentID = await services.getUUID();
+            const uploadedImage = await accommodationUtils.uploadImage(file, AttachmentID);
+            await services.create({ AttachmentID: AttachmentID, OriginalFileName: file.originalname }, 'Attachment');
+            return uploadedImage;
+        });
+
+        res.status(200).json({
+            key: UPLOAD_SUCCESSFUL,
+            message: "Upload was successful",
+            result: uploads
+        });
+    } catch (error) {
+      next(error)
     }
 }

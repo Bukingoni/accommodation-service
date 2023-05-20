@@ -2,9 +2,10 @@ const sequelize = require('sequelize');
 const SequelizeOperators = sequelize.Op;
 const services = require('@services');
 const { validateObject } = require('@utils/validation');
+const config = require('@config');
 
 
-const crudValidation = (
+const crudValidation = ( // ADD CHECK THAT THE NAME IS UNIQUE
     requiredParams = [],
     params,
     additionalProperties = false
@@ -34,4 +35,29 @@ const crudValidation = (
         additionalProperties
     );
 }
+
+
+const bucket = config.storage.bucket('bukingoni-bucket');
+const uploadImage = (file, attachmentId) => new Promise((resolve, reject) => {
+    const { buffer } = file;
+
+    const blobName = `accommodations/${attachmentId}`;
+    const blob = bucket.file(blobName);
+    
+    const blobStream = blob.createWriteStream({
+        resumable: false
+    })
+    
+    blobStream.on('finish', () => {
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+      resolve(publicUrl)
+    })
+    .on('error', (err) => {
+      console.log(err);
+      reject(`Unable to upload image, something went wrong`)
+    })
+    .end(buffer)
+});
+
 module.exports.crudValidation = crudValidation;
+module.exports.uploadImage = uploadImage;

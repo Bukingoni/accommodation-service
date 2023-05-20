@@ -14,5 +14,6 @@ router.get('/:AccommodationID', crudController.load);
 router.put('/:AccommodationID', crudController.update);
 router.delete('/', crudController.delete);
 router.get('/', crudController.listAndCount);
+// router.post('/add-attachment', crudController.addImage);
 
 module.exports = router;

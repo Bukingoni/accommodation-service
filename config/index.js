@@ -1,3 +1,5 @@
+const { Storage } = require("@google-cloud/storage");
+
 module.exports = {
     serviceName: 'accommodation-service',
     logger: {
@@ -24,4 +26,9 @@ module.exports = {
         dialect: process.env.DATABASE_DIALECT ?? 'mariadb',
         forceSync: process.env.DATABASE_FORCE_SYNC === 'true'
     },
+    storage: new Storage({
+        keyFilename: process.env.SERVICE_KEY,
+        projectId: process.env.PROJECT_ID,
+        bucketName: process.env.BUCKET_NAME,
+    })
 }
